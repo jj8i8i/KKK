@@ -238,9 +238,8 @@ function applyUnaryOps(resultsMap, level, numbersUsed) {
         
         // Sqrt (Lv.2)
         if (level >= 2 && v > 0 && Number.isInteger(Math.sqrt(v))) {
-             // ** (แก้ไข) ไม่ทำ sqrt ถ้าผลลัพธ์คือ 1 **
-             // เพื่อตัด √0! ออก (เพราะ 0! = 1) ทำให้ผลลัพธ์ 1 ถูกสร้างจาก 0! โดยตรงดีกว่า
-             if (v === 1 && s.expr === '1') continue;
+             // ** (แก้ไข) ไม่ทำ sqrt ถ้าผลลัพธ์ที่ถอดรากมีค่าเป็น 1 **
+             if (v === 1) continue; 
              
             const val = Math.sqrt(v);
             const expr = `√[${s.expr}]`; 
