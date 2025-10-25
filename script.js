@@ -115,7 +115,18 @@ function solveSubsetRecursive(numbers, level) {
     // Base Case: [n]
     if (numbers.length === 1) {
         const n = numbers[0];
+        // 1. ตัวเลขปกติ (เช่น 0, 1, 2, 3)
         addSolution(results, new SolutionInfo(n, `${n}`, 99, 0, 0, [n]));
+        
+        // 2. (แก้ไข) Factorial ของตัวเลขฐาน (เช่น 0! = 1, 3! = 6)
+        if (level >= 3 && n >= 0 && n <= MAX_FACTORIAL) {
+            const val = factorial(n);
+            const opCount = 1;
+            // 0! = 1 (ใช้ 1 ตัว)
+            addSolution(results, new SolutionInfo(val, `${n}!`, 99, opCount, 3, [n]));
+        }
+        
+        // 3. Unary Ops อื่นๆ ที่ใช้กับตัวเลขฐาน
         applyUnaryOps(results, level, [n]); 
         allSubsetResults.set(key, results);
         return results;
@@ -183,9 +194,34 @@ function solveSubsetRecursive(numbers, level) {
                 }
             }
         }
+        
+        // (แก้ไข) Factorial กับผลลัพธ์ย่อย (เมื่อ level >= 3) 
+        if (level >= 3) {
+            const currentResults = Array.from(results.values()); 
+            
+            for (const s of currentResults) {
+                const v = s.value;
+                if (v >= 0 && v <= MAX_FACTORIAL && Number.isInteger(v)) {
+                    const val = factorial(v);
+                    const opCount = s.opCount + 1;
+                    
+                    let expr;
+                    // ใส่วงเล็บครอบ (ถ้ายังไม่มี) ยกเว้นเป็นตัวเลขเดี่ยวๆ 
+                    // Factorial ที่เกิดจากการรวมตัวเลขแล้ว (s.opCount > 0) ควรใส่วงเล็บ
+                    if (s.opCount === 0 && s.expr.length === 1 && /[0-9]/.test(s.expr)) {
+                         expr = `${s.expr}!`; 
+                    } else {
+                         expr = `(${s.expr})!`; 
+                    }
+                    
+                    // สร้าง SolutionInfo ใหม่
+                    addSolution(results, new SolutionInfo(val, expr, 99, opCount, 3, s.numbers));
+                }
+            }
+        }
     }
     
-    // Unary Ops (sqrt, !) on combined results
+    // Unary Ops (sqrt) - Factorial ถูกจัดการแล้ว
     const finalResults = new Map(results);
     applyUnaryOps(finalResults, level, numbers);
     
@@ -206,25 +242,6 @@ function applyUnaryOps(resultsMap, level, numbersUsed) {
             const val = Math.sqrt(v);
             const expr = `√[${s.expr}]`; 
             addSolution(resultsMap, new SolutionInfo(val, expr, 99, opCount, 2, numbersUsed));
-        }
-        
-        // Factorial (Lv.3)
-        if (level >= 3 && v >= 0 && v <= MAX_FACTORIAL && Number.isInteger(v)) {
-            const val = factorial(v);
-            
-            let expr;
-            // ตรวจสอบว่า s.expr ถูกครอบด้วยวงเล็บอยู่แล้วหรือไม่ (เพื่อหลีกเลี่ยงการแสดงผลที่น่าเกลียด)
-            if (s.expr.startsWith('(') && s.expr.endsWith(')')) {
-                 if (cleanParentheses(s.expr).length < s.expr.length) {
-                     expr = `${s.expr}!`; 
-                 } else {
-                     expr = `(${s.expr})!`;
-                 }
-            } else {
-                 expr = `(${s.expr})!`; // เช่น (5)!
-            }
-            
-            addSolution(resultsMap, new SolutionInfo(val, expr, 99, opCount, 3, numbersUsed));
         }
     }
 }
@@ -267,9 +284,11 @@ function addSolution(map, newSol) {
     } else if (newSol.level === existingSol.level && newSol.opCount < existingSol.opCount) {
         map.set(newSol.value, newSol);
     } else if (newSol.level === existingSol.level && 
-               newSol.opCount === existingSol.opCount &&
-               newSol.expr.length < existingSol.expr.length) {
-        map.set(newSol.value, newSol); 
+               newSol.opCount === existingSol.opCount) {
+        // (แก้ไข) หาก Level และ OpCount เท่ากัน ให้เลือกนิพจน์ที่สั้นกว่า
+        if (newSol.expr.length < existingSol.expr.length) {
+             map.set(newSol.value, newSol);
+        }
     }
 }
 
