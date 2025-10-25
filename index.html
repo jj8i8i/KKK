@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastMath Solver (อัจฉริยะ 5 วินาที)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>💡 FastMath Solver</h1>
+            <p>แสดงวิธีคิดจากตัวเลขที่กำหนดเพื่อหาคำตอบที่ง่ายที่สุด</p>
+        </header>
+        
+        <main>
+            <div class="input-group">
+                <label for="mode-select">โหมด:</label>
+                <select id="mode-select">
+                    <option value="5">5 ตัว 3 หลัก</option>
+                    <option value="4">4 ตัว 3 หลัก</option>
+                </select>
+                
+                <label for="level-select">เลเวล (Level):</label>
+                <select id="level-select">
+                    <option value="B">Lv.B (+, -, *, /)</option>
+                    <option value="1">Lv.1 (+ Power ^)</option>
+                    <option value="2">Lv.2 (+ Root √, Sqrt)</option>
+                    <option value="3" selected>Lv.3 (+ Factorial !, Sigma Σ)</option>
+                </select>
+            </div>
+            
+            <div class="input-block">
+                <label for="numbers">ตัวเลข:</label>
+                <input type="text" id="numbers" placeholder="เช่น 2 4 8 1 4 หรือ 2,4,8,1,4" value="2 4 8 1 4">
+            </div>
+            
+            <div class="input-block">
+                <label for="target">ผลลัพธ์ (เป้าหมาย):</label>
+                <input type="number" id="target" placeholder="เช่น 976" value="976">
+            </div>
+
+            <button id="solve-button">ค้นหาวิธีคิด</button>
+
+            <div id="loading-spinner" class="hidden">
+                <div class="spinner"></div>
+                <p>กำลังค้นหาวิธีคิด... (สูงสุด 5 วินาที)</p>
+            </div>
+
+            <div id="results">
+                <p>ใส่ตัวเลขและเป้าหมาย แล้วกด "ค้นหาวิธีคิด" เพื่อเริ่มต้น</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>© 2025 FastMath. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script src="script.js"></script> 
+</body>
+</html>
