@@ -118,7 +118,7 @@ function solveSubsetRecursive(numbers, level) {
         // 1. ตัวเลขปกติ (เช่น 0, 1, 2, 3)
         addSolution(results, new SolutionInfo(n, `${n}`, 99, 0, 0, [n]));
         
-        // 2. (แก้ไข) Factorial ของตัวเลขฐาน (เช่น 0! = 1, 3! = 6)
+        // 2. Factorial ของตัวเลขฐาน (เช่น 0! = 1, 3! = 6)
         if (level >= 3 && n >= 0 && n <= MAX_FACTORIAL) {
             const val = factorial(n);
             const opCount = 1;
@@ -195,7 +195,7 @@ function solveSubsetRecursive(numbers, level) {
             }
         }
         
-        // (แก้ไข) Factorial กับผลลัพธ์ย่อย (เมื่อ level >= 3) 
+        // Factorial กับผลลัพธ์ย่อย (เมื่อ level >= 3) 
         if (level >= 3) {
             const currentResults = Array.from(results.values()); 
             
@@ -206,8 +206,7 @@ function solveSubsetRecursive(numbers, level) {
                     const opCount = s.opCount + 1;
                     
                     let expr;
-                    // ใส่วงเล็บครอบ (ถ้ายังไม่มี) ยกเว้นเป็นตัวเลขเดี่ยวๆ 
-                    // Factorial ที่เกิดจากการรวมตัวเลขแล้ว (s.opCount > 0) ควรใส่วงเล็บ
+                    // ใส่วงเล็บครอบ (ถ้ายังไม่มี) ยกเว้นเป็นตัวเลขเดี่ยวๆ ที่ถูก factorial ตั้งแต่ Base Case
                     if (s.opCount === 0 && s.expr.length === 1 && /[0-9]/.test(s.expr)) {
                          expr = `${s.expr}!`; 
                     } else {
@@ -221,7 +220,7 @@ function solveSubsetRecursive(numbers, level) {
         }
     }
     
-    // Unary Ops (sqrt) - Factorial ถูกจัดการแล้ว
+    // Unary Ops (sqrt) 
     const finalResults = new Map(results);
     applyUnaryOps(finalResults, level, numbers);
     
@@ -237,8 +236,12 @@ function applyUnaryOps(resultsMap, level, numbersUsed) {
         const v = s.value;
         const opCount = s.opCount + 1;
         
-        // Sqrt (Lv.2) - ใช้สัญลักษณ์ √[start]...[end] เพื่อให้รู้ขอบเขตทั้งหมด
+        // Sqrt (Lv.2)
         if (level >= 2 && v > 0 && Number.isInteger(Math.sqrt(v))) {
+             // ** (แก้ไข) ไม่ทำ sqrt ถ้าผลลัพธ์คือ 1 **
+             // เพื่อตัด √0! ออก (เพราะ 0! = 1) ทำให้ผลลัพธ์ 1 ถูกสร้างจาก 0! โดยตรงดีกว่า
+             if (v === 1 && s.expr === '1') continue;
+             
             const val = Math.sqrt(v);
             const expr = `√[${s.expr}]`; 
             addSolution(resultsMap, new SolutionInfo(val, expr, 99, opCount, 2, numbersUsed));
