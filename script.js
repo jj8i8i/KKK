@@ -9,15 +9,15 @@ const loadingSpinner = document.getElementById('loading-spinner');
 
 // --- Global Caches & Constants ---
 let allSubsetResults = new Map();
-const TIME_LIMIT_MS = 5000; // 5 วินาที
+const TIME_LIMIT_MS = 10000; // 10 วินาที
 
 // --- Constants ---
 const PRECEDENCE = { '+': 1, '-': 1, '*': 2, '/': 2, '^': 3, 'root': 3 };
-const MAX_FACTORIAL = 8;
+const MAX_FACTORIAL = 11; // เพิ่มเป็น 11
 const MAX_POWER_BASE = 8;
 const MAX_POWER_EXP = 5;
 const MAX_SIGMA_RANGE = 10;
-const MAX_RESULT_VALUE = 20000; 
+const MAX_RESULT_VALUE = 40000000; // เพิ่มเป็น 40 ล้าน (เพื่อรองรับ 11!)
 
 // --- SolutionInfo Class ---
 class SolutionInfo {
@@ -118,11 +118,10 @@ function solveSubsetRecursive(numbers, level) {
         // 1. ตัวเลขปกติ (เช่น 0, 1, 2, 3)
         addSolution(results, new SolutionInfo(n, `${n}`, 99, 0, 0, [n]));
         
-        // 2. Factorial ของตัวเลขฐาน (เช่น 0! = 1, 3! = 6)
+        // 2. Factorial ของตัวเลขฐาน (เช่น 0! = 1, 11! = 39916800)
         if (level >= 3 && n >= 0 && n <= MAX_FACTORIAL) {
             const val = factorial(n);
             const opCount = 1;
-            // 0! = 1 (ใช้ 1 ตัว)
             addSolution(results, new SolutionInfo(val, `${n}!`, 99, opCount, 3, [n]));
         }
         
@@ -336,14 +335,42 @@ function solveSigma(numbers, target, deadline) {
                     if (s_val <= 0 || s_val > e_val || e_val - s_val > MAX_SIGMA_RANGE) continue;
                     
                     for (const [x_val, x_sol] of exprs.entries()) {
-                        let sum = 0;
-                        for (let k = s_val; k <= e_val; k++) sum += (Math.pow(x_val, k) - k);
                         
-                        if (sum === target) {
+                        // Template 1: (X^i - i) - (Original)
+                        let sum1 = 0;
+                        for (let k = s_val; k <= e_val; k++) sum1 += (Math.pow(x_val, k) - k);
+                        if (sum1 === target) {
                              const expr_base = `{${x_sol.expr}}^{i}`;
                              const full_expr = `(${expr_base} - i)`; 
-                             
                              solutions.push(formatSigmaSolution(target, s_sol, e_sol, full_expr));
+                        }
+
+                        // Template 2: (i! + X) - (Smarter)
+                        if (e_val <= MAX_FACTORIAL) { // Check factorial limit
+                            let sum2 = 0;
+                            for (let k = s_val; k <= e_val; k++) sum2 += (factorial(k) + x_val);
+                            if (sum2 === target) {
+                                const full_expr = `(i! + {${x_sol.expr}})`;
+                                solutions.push(formatSigmaSolution(target, s_sol, e_sol, full_expr));
+                            }
+                        }
+
+                        // Template 3: (i^2 + X) - (Smarter)
+                        let sum3 = 0;
+                        for (let k = s_val; k <= e_val; k++) sum3 += (k*k + x_val);
+                        if (sum3 === target) {
+                            const full_expr = `(i^{2} + {${x_sol.expr}})`;
+                            solutions.push(formatSigmaSolution(target, s_sol, e_sol, full_expr));
+                        }
+
+                        // Template 4: (X * i!) - (Smarter)
+                         if (e_val <= MAX_FACTORIAL) {
+                            let sum4 = 0;
+                            for (let k = s_val; k <= e_val; k++) sum4 += (x_val * factorial(k));
+                            if (sum4 === target) {
+                                const full_expr = `({${x_sol.expr}} \\times i!)`;
+                                solutions.push(formatSigmaSolution(target, s_sol, e_sol, full_expr));
+                            }
                         }
                     }
                 }
@@ -389,7 +416,7 @@ function solveSigma(numbers, target, deadline) {
 // --- Display Functions ---
 function displaySolutions(solutions, target) {
     if (solutions.length === 0) {
-        displayError("ไม่พบวิธีคิด (หรือหาไม่ทันใน 5 วินาที)");
+        displayError("ไม่พบวิธีคิด (หรือหาไม่ทันใน 10 วินาที)");
         return;
     }
 
@@ -413,7 +440,7 @@ function displaySolutions(solutions, target) {
         });
 
     } else {
-        html += `<p>❌ ไม่พบคำตอบตรงเป๊ะ (ใน 5 วินาที)</p>`;
+        html += `<p>❌ ไม่พบคำตอบตรงเป๊ะ (ใน 10 วินาที)</p>`;
         html += `<p>คำตอบที่ใกล้เคียงที่สุดที่หาได้คือ: <strong>${closestMatch.value}</strong> (ต่างจากเป้า ${closestMatch.diff})</p>`;
         html += formatSolutionHTML(closestMatch, true);
     }
